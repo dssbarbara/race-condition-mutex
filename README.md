@@ -52,4 +52,29 @@ Cada caso foi executado várias vezes, pois o comportamento é irregular, caract
   antes de qualquer uma executar `saldo -= valor`.
 
 ### Código corrigido
-*(a preencher após a correção)*
+`codigo_corrigido/conta_m.cpp`
+
+**Mudanças:**
+- Adicionado `#include <mutex>` e um `mutex mtx` global.
+- Adicionado `lock_guard<mutex> lock(mtx);` no início de `sacar()`, de modo que
+  a verificação do saldo, a subtração e a impressão formem uma única seção
+  crítica.
+
+**Por que usei mutex** O problema é proteger um único recurso
+compartilhado (`saldo`) com acesso exclusivo. O mutex expressa isso
+diretamente e tem quem trava é quem destrava, o que evita liberações
+indevidas. Um semáforo é mais indicado para limitar o número de threads
+simultâneas em um recurso ou sincronizar eventos, o que não é o caso.
+
+
+**Resultados após a correção** (20 execuções por caso):
+
+| Caso | Esperado | Obtido | Resultado |
+|---|---|---|---|
+| 1 | 20 | 20 em 20/20 execuções |  Passou |
+| 2 | 10 (3 aprovados, 2 negados) | 10 em 20/20 execuções; contagem 3 e 2 | Passou |
+| 3 | 0 | 0 em 20/20 execuções | Passou |
+
+**Estabilidade:** o saldo final foi idêntico em todas as execuções, e a saída
+do terminal não aparece mais embaralhada. 
+
