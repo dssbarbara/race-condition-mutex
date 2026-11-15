@@ -52,7 +52,6 @@ Cada caso foi executado várias vezes, pois o comportamento é irregular, caract
   antes de qualquer uma executar `saldo -= valor`.
 
 ### Código corrigido
-`codigo_corrigido/conta_m.cpp`
 
 **Mudanças:**
 - Adicionado `#include <mutex>` e um `mutex mtx` global.
