@@ -192,6 +192,29 @@ Evidências: `evidencias/yara_avalia_barbara_original.png`, `evidencias/yara_ava
 
 ### Bárbara avalia o código da Yara (Cenário 2)
 
-(a fazer pela Bárbara: executar `bash rodar_testes_yara.sh`, que roda os 3 casos do
-Cenário 2 no código original e no corrigido, e registrar o que estava errado antes,
-o que mudou com a correção e se o comportamento agora é estável)
+código original:
+
+| Caso | Comando | Esperado | Original | Corrigido |
+|---|---|---|---|---|
+| 1 | `./estacionamento 0 1000 1000` | 0 | 1000 em 7/10, -1000 em 3/10 (nunca 0) | 0 em 10/10 |
+| 2 | `./estacionamento 100 6 0` | 106 | 106 em 10/10 | 106 em 10/10 |
+| 3 | `./estacionamento 200 8 10` | 198 | 190 em 9/10, 192 em 1/10 | 198 em 10/10 |
+
+Em outras rodadas do caso 1 no original também apareceram outros valores, o que reforça o não determinismo.
+
+**O que estava errado antes:** as duas cancelas executam *ler, esperar, gravar*
+sobre o mesmo contador `carros_dentro`, sem proteção. Quando as duas leem o mesmo
+valor antes de qualquer uma gravar, quem grava por último sobrescreve a atualização
+da outra. O caso 2 só passou porque só a cancela de entrada altera o contador, então não há disputa.
+Diferente do meu cenário (verificar e depois agir), aqui o erro é de
+*ler-modificar-gravar*.
+
+**O que mudou com a correção:** foi incluído `<mutex>` e um `std::mutex m` global.
+`m.lock()` foi colocado antes da leitura de `carros_dentro` e `m.unlock()` depois da
+gravação, de modo que o ciclo inteiro vire uma região crítica.
+Assim uma cancela só começa a atualizar depois que a outra terminou.
+
+**Estabilidade:** nos 3 casos o resultado foi igual ao esperado em 10/10 execuções.
+
+Evidências: `evidencias/barbara_avalia_yara_original_*.txt`,
+`evidencias/barbara_avalia_yara_corrigido_*.txt`, `evidencias/testes_yara_corrigido*.png`, `evidencias/testes_yara_original*.png`
